@@ -16,6 +16,7 @@ public class Splitter {
     }
     
     public ArrayList<String> getStringList(String texto){
+        System.out.println(texto);
         char[] caracteres = texto.toCharArray();
         ArrayList<String> cadenas = new ArrayList<>();
         String segmento = "";
@@ -28,14 +29,19 @@ public class Splitter {
                 }else{
                     int contador = 0;
                     for (int j = i; j < caracteres.length; j++) {
-                        if (caracteres[i] == ' ') {
+                        char actual = caracteres[j];
+                        if (actual == ' ') {
                             contador++;
+                        }else{
+                            break;
                         }
                     }
-                    i += contador;
+                    i += contador-1;
                 }
-            }else{
+            } else{
                 segmento += caracteres[i];
+            }if (i == caracteres.length-1 && !segmento.isBlank()) {
+                cadenas.add(segmento);
             }
         }
         return cadenas;

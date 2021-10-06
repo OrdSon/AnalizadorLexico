@@ -35,6 +35,10 @@ public class Token {
         return this.tipo.toString();
     }
 
+    public Token.Tipo getTipoT() {
+        return this.tipo;
+    }
+
     public String getValor() {
         return this.valor;
     }

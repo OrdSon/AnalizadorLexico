@@ -7,10 +7,18 @@ package Editor;
 
 import Analizador.Analizador;
 import Analizador.Splitter;
+import Reporte.Reporte;
 import TextLine.TextLineNumber;
+import Token.Token;
+import java.awt.Color;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 import org.drjekyll.fontchooser.FontChooser;
 
 /**
@@ -18,10 +26,13 @@ import org.drjekyll.fontchooser.FontChooser;
  * @author ordson
  */
 public class Editor extends javax.swing.JFrame {
+
     Import importar = new Import();
     FontChooser fontChooser = new FontChooser();
     Splitter splitter = new Splitter();
     Analizador analizador = new Analizador();
+    Pintor pintor = new Pintor();
+
     /**
      * Creates new form Editor
      */
@@ -30,10 +41,11 @@ public class Editor extends javax.swing.JFrame {
         addLineNumbers();
     }
 
-    private void addLineNumbers(){
+    private void addLineNumbers() {
         TextLineNumber textLineNumber = new TextLineNumber(panelPrincipal);
         scroller.setRowHeaderView(textLineNumber);
     }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -53,6 +65,9 @@ public class Editor extends javax.swing.JFrame {
         barraDeOpciones = new javax.swing.JMenuBar();
         menuArchivo = new javax.swing.JMenu();
         opcionAbrir = new javax.swing.JMenuItem();
+        jMenuItem2 = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem3 = new javax.swing.JMenuItem();
         menuEditar = new javax.swing.JMenu();
         opcionFuente = new javax.swing.JMenuItem();
         menuCodigo = new javax.swing.JMenu();
@@ -60,7 +75,9 @@ public class Editor extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(800, 600));
-        setPreferredSize(new java.awt.Dimension(800, 600));
+
+        PanelPestañas.setMinimumSize(new java.awt.Dimension(78, 200));
+        PanelPestañas.setPreferredSize(new java.awt.Dimension(228, 200));
 
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
@@ -91,6 +108,20 @@ public class Editor extends javax.swing.JFrame {
         });
         menuArchivo.add(opcionAbrir);
 
+        jMenuItem2.setText("Reporte de palabras");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+        menuArchivo.add(jMenuItem2);
+
+        jMenuItem1.setText("Reporte de errores");
+        menuArchivo.add(jMenuItem1);
+
+        jMenuItem3.setText("Guardar");
+        menuArchivo.add(jMenuItem3);
+
         barraDeOpciones.add(menuArchivo);
 
         menuEditar.setText("Editar");
@@ -107,6 +138,7 @@ public class Editor extends javax.swing.JFrame {
 
         menuCodigo.setText("Codigo");
 
+        opcionCompilar.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_DOWN_MASK));
         opcionCompilar.setText("Analizar");
         opcionCompilar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -127,15 +159,29 @@ public class Editor extends javax.swing.JFrame {
     }//GEN-LAST:event_opcionAbrirActionPerformed
 
     private void opcionFuenteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_opcionFuenteActionPerformed
-        JOptionPane.showMessageDialog(null, fontChooser,"Escoger fuente", JOptionPane.PLAIN_MESSAGE);
-        panelPrincipal.setFont(fontChooser.getSelectedFont());
+        JOptionPane.showMessageDialog(null, fontChooser, "Escoger fuente", JOptionPane.PLAIN_MESSAGE);
+        SimpleAttributeSet normal = new SimpleAttributeSet();
+        StyleConstants.setFontFamily(normal, fontChooser.getSelectedFont().getFamily());
+        StyleConstants.setFontSize(normal, (int)fontChooser.getSelectedSize());
+        panelPrincipal.setCharacterAttributes(normal, true);
     }//GEN-LAST:event_opcionFuenteActionPerformed
 
     private void opcionCompilarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_opcionCompilarActionPerformed
-        ArrayList<String> cadenas = splitter.getStringList(panelPrincipal.getText());
-        analizador.Analizar(cadenas);
-        analizador.print();
+        try {
+            ArrayList<String> cadenas = splitter.getStringList(panelPrincipal.getDocument().getText(0, panelPrincipal.getDocument().getLength()));
+            analizador = new Analizador();
+            analizador.Analizar(cadenas);
+            analizador.print();
+            pintar();
+        } catch (BadLocationException ex) {
+            Logger.getLogger(Editor.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_opcionCompilarActionPerformed
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        Reporte reporte = new Reporte();
+        reporte.mostrarPalabras(analizador.getTokens());
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -172,9 +218,31 @@ public class Editor extends javax.swing.JFrame {
         });
     }
 
+    private void pintar() {
+        panelPrincipal.setText("");
+        ArrayList<Token> tokens = analizador.getTokens();
+        for (int i = 0; i < tokens.size(); i++) {
+            try {                
+                    pintor.display(" ", fontChooser.getSelectedFont().getFamily(), (int) fontChooser.getSelectedSize(), tokens.get(i), panelPrincipal);
+                
+            } catch (BadLocationException ex) {
+                Logger.getLogger(Editor.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        try {
+            pintor.setBlack(fontChooser.getSelectedFont().getFamily(), (int) fontChooser.getSelectedSize(), panelPrincipal);
+        } catch (BadLocationException ex) {
+            Logger.getLogger(Editor.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            panelPrincipal.setCaretPosition(panelPrincipal.getDocument().getLength()-1);
+        }
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTabbedPane PanelPestañas;
     private javax.swing.JMenuBar barraDeOpciones;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextArea jTextArea2;
     private javax.swing.JMenu menuArchivo;
