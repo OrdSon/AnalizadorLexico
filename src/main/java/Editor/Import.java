@@ -38,6 +38,8 @@ public class Import {
             textPane.requestFocus();
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(partner, "Error al encontrar archivo");
+        }catch(NullPointerException ex){
+            JOptionPane.showMessageDialog(null, "Error leyendo");
         }
     }
 }

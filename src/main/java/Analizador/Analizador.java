@@ -22,6 +22,7 @@ public class Analizador {
     {"S2", "D", "S2"},
     {"S2", "N", "S2"},
     {"S1", "N", "S3"},
+    {"S1", "D", "S3"},
     {"S3", "D", "S3"},
     {"S3", "N", "S3"},
     {"S3", ".", "S4"},
@@ -162,3 +163,4 @@ public class Analizador {
         return tokens;
     }
 }
+ 

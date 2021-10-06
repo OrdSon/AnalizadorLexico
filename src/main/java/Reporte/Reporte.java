@@ -4,6 +4,7 @@
  */
 package Reporte;
 
+import Analizador.Export;
 import Token.Token;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -17,7 +18,7 @@ import javax.swing.text.StyleConstants;
  * @author ordson
  */
 public class Reporte extends javax.swing.JFrame {
-
+    Export export = new Export();
     /**
      * Creates new form Reporte
      */
@@ -54,6 +55,11 @@ public class Reporte extends javax.swing.JFrame {
         jMenu1.setText("Archivo");
 
         jMenuItem2.setText("Guardar");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
         jMenu1.add(jMenuItem2);
 
         jMenuBar1.add(jMenu1);
@@ -62,6 +68,10 @@ public class Reporte extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+       export.SaveAs(jTextPane1, this);
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -114,6 +124,36 @@ public class Reporte extends javax.swing.JFrame {
                     Logger.getLogger(Reporte.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+        }
+    }
+    
+    public void mostrarErrores(ArrayList<Token> tokens){
+        for (int i = 0; i < tokens.size(); i++) {
+            if (tokens.get(i).getTipo().equals("ERROR")) {
+                SimpleAttributeSet normal = new SimpleAttributeSet();
+                StyleConstants.setFontFamily(normal, "SansSerif");
+                StyleConstants.setFontSize(normal, 16);
+                try {
+                    jTextPane1.getDocument().insertString(jTextPane1.getDocument().getLength(), tokens.get(i).getTipo() +" " +tokens.get(i).getValor()+ "\n", normal);
+                } catch (BadLocationException ex) {
+                    Logger.getLogger(Reporte.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }
+    
+    public void mostrar(ArrayList<Token> tokens){
+        for (int i = 0; i < tokens.size(); i++) {
+           
+                SimpleAttributeSet normal = new SimpleAttributeSet();
+                StyleConstants.setFontFamily(normal, "SansSerif");
+                StyleConstants.setFontSize(normal, 16);
+                try {
+                    jTextPane1.getDocument().insertString(jTextPane1.getDocument().getLength(), tokens.get(i).getTipo() +" " +tokens.get(i).getValor()+ "\n", normal);
+                } catch (BadLocationException ex) {
+                    Logger.getLogger(Reporte.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            
         }
     }
 

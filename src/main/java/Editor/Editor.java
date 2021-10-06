@@ -6,11 +6,12 @@
 package Editor;
 
 import Analizador.Analizador;
+import Analizador.Contador;
+import Analizador.Export;
 import Analizador.Splitter;
 import Reporte.Reporte;
 import TextLine.TextLineNumber;
 import Token.Token;
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,8 +27,9 @@ import org.drjekyll.fontchooser.FontChooser;
  * @author ordson
  */
 public class Editor extends javax.swing.JFrame {
-
+    Export export = new Export();
     Import importar = new Import();
+    Contador contador = new Contador();
     FontChooser fontChooser = new FontChooser();
     Splitter splitter = new Splitter();
     Analizador analizador = new Analizador();
@@ -45,7 +47,22 @@ public class Editor extends javax.swing.JFrame {
         TextLineNumber textLineNumber = new TextLineNumber(panelPrincipal);
         scroller.setRowHeaderView(textLineNumber);
     }
-
+    private void mostrarCoincidencias(){
+        txtErrores.setText("");
+        txtTokens.setText("");
+        txtRecuento.setText("");
+        for (int i = 0; i < analizador.getTokens().size(); i++) {
+            if (analizador.getTokens().get(i).getTipo().equals("ERROR")) {
+                txtErrores.setText(txtErrores.getText()+analizador.getTokens().get(i).getTipo()+" "+ analizador.getTokens().get(i).getValor()+"\n");
+            }else{
+                txtTokens.setText(txtTokens.getText()+analizador.getTokens().get(i).getTipo()+" "+ analizador.getTokens().get(i).getValor()+"\n");
+            }
+        }
+        ArrayList<String> contadas = contador.contar(analizador.getTokens());
+        for (int i = 0; i < contadas.size(); i++) {
+            txtRecuento.setText(txtRecuento.getText()+contadas.get(i)+"\n");
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -56,15 +73,18 @@ public class Editor extends javax.swing.JFrame {
     private void initComponents() {
 
         PanelPestañas = new javax.swing.JTabbedPane();
-        txtTokens = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
-        txtErrores = new javax.swing.JScrollPane();
-        jTextArea2 = new javax.swing.JTextArea();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        txtTokens = new javax.swing.JTextPane();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        txtErrores = new javax.swing.JTextPane();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        txtRecuento = new javax.swing.JTextPane();
         scroller = new javax.swing.JScrollPane();
         panelPrincipal = new javax.swing.JTextPane();
         barraDeOpciones = new javax.swing.JMenuBar();
         menuArchivo = new javax.swing.JMenu();
         opcionAbrir = new javax.swing.JMenuItem();
+        jMenuItem4 = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
@@ -79,17 +99,17 @@ public class Editor extends javax.swing.JFrame {
         PanelPestañas.setMinimumSize(new java.awt.Dimension(78, 200));
         PanelPestañas.setPreferredSize(new java.awt.Dimension(228, 200));
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        txtTokens.setViewportView(jTextArea1);
+        jScrollPane1.setViewportView(txtTokens);
 
-        PanelPestañas.addTab("Tokens", txtTokens);
+        PanelPestañas.addTab("Tokens", jScrollPane1);
 
-        jTextArea2.setColumns(20);
-        jTextArea2.setRows(5);
-        txtErrores.setViewportView(jTextArea2);
+        jScrollPane2.setViewportView(txtErrores);
 
-        PanelPestañas.addTab("Errores", txtErrores);
+        PanelPestañas.addTab("Errores", jScrollPane2);
+
+        jScrollPane4.setViewportView(txtRecuento);
+
+        PanelPestañas.addTab("Recuento", jScrollPane4);
 
         getContentPane().add(PanelPestañas, java.awt.BorderLayout.PAGE_END);
 
@@ -108,6 +128,14 @@ public class Editor extends javax.swing.JFrame {
         });
         menuArchivo.add(opcionAbrir);
 
+        jMenuItem4.setText("Reporte");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
+        menuArchivo.add(jMenuItem4);
+
         jMenuItem2.setText("Reporte de palabras");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -117,9 +145,19 @@ public class Editor extends javax.swing.JFrame {
         menuArchivo.add(jMenuItem2);
 
         jMenuItem1.setText("Reporte de errores");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
         menuArchivo.add(jMenuItem1);
 
         jMenuItem3.setText("Guardar");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
         menuArchivo.add(jMenuItem3);
 
         barraDeOpciones.add(menuArchivo);
@@ -176,12 +214,27 @@ public class Editor extends javax.swing.JFrame {
         } catch (BadLocationException ex) {
             Logger.getLogger(Editor.class.getName()).log(Level.SEVERE, null, ex);
         }
+        mostrarCoincidencias();
     }//GEN-LAST:event_opcionCompilarActionPerformed
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         Reporte reporte = new Reporte();
         reporte.mostrarPalabras(analizador.getTokens());
     }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+      export.SaveAs(panelPrincipal, this);
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
+
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+        Reporte reporte = new Reporte();
+        reporte.mostrar(analizador.getTokens());
+    }//GEN-LAST:event_jMenuItem4ActionPerformed
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        Reporte reporte = new Reporte();
+        reporte.mostrarErrores(analizador.getTokens());
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -219,7 +272,12 @@ public class Editor extends javax.swing.JFrame {
     }
 
     private void pintar() {
-        panelPrincipal.setText("");
+        try {
+             panelPrincipal.setText("");
+        } catch (Exception e) {
+        }
+       
+        
         ArrayList<Token> tokens = analizador.getTokens();
         for (int i = 0; i < tokens.size(); i++) {
             try {                
@@ -233,7 +291,9 @@ public class Editor extends javax.swing.JFrame {
             pintor.setBlack(fontChooser.getSelectedFont().getFamily(), (int) fontChooser.getSelectedSize(), panelPrincipal);
         } catch (BadLocationException ex) {
             Logger.getLogger(Editor.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
+        } catch(NullPointerException ex){
+            JOptionPane.showMessageDialog(null, "null aqui");
+        }finally {
             panelPrincipal.setCaretPosition(panelPrincipal.getDocument().getLength()-1);
         }
     }
@@ -243,8 +303,10 @@ public class Editor extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextArea jTextArea2;
+    private javax.swing.JMenuItem jMenuItem4;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JMenu menuArchivo;
     private javax.swing.JMenu menuCodigo;
     private javax.swing.JMenu menuEditar;
@@ -253,12 +315,12 @@ public class Editor extends javax.swing.JFrame {
     private javax.swing.JMenuItem opcionFuente;
     private javax.swing.JTextPane panelPrincipal;
     private javax.swing.JScrollPane scroller;
-    private javax.swing.JScrollPane txtErrores;
-    private javax.swing.JScrollPane txtTokens;
+    private javax.swing.JTextPane txtErrores;
+    private javax.swing.JTextPane txtRecuento;
+    private javax.swing.JTextPane txtTokens;
     // End of variables declaration//GEN-END:variables
 
     public JTextPane getjTextPane1() {
         return panelPrincipal;
     }
-
 }

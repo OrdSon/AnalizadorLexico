@@ -69,12 +69,12 @@ public class Distinguisher {
     private String getNumberType(char caracter){
         try {
             int numero = Integer.parseInt(caracter+"");
-            for (int i = 1; i < 9; i++) {
+            for (int i = 1; i <= 9; i++) {
                 if (i == numero) {
                     return "N";
                 }
             }
-            for (int i = 0; i < 9; i++) {
+            for (int i = 0; i <= 9; i++) {
                 if (i == numero) {
                     return "D";
                 }
